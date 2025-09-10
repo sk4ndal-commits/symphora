@@ -7,9 +7,9 @@
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar with Tools and Properties -->
-        <div class="col-md-3 border-end bg-light" style="min-height: 100vh;">
+        <div class="col-md-3 ai-sidebar" style="min-height: 100vh;">
             <div class="p-3">
-                <h5>Workflow Properties</h5>
+                <h5><i class="fas fa-cog me-2 text-primary"></i>Workflow Properties</h5>
                 <form id="workflowForm">
                     <div class="mb-3">
                         <label for="workflowName" class="form-label">Name *</label>
@@ -20,44 +20,48 @@
                         <textarea class="form-control" id="workflowDescription" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
-                        <button type="button" class="btn btn-primary w-100" id="saveWorkflow">
-                            <i class="fas fa-save"></i> Save Workflow
+                        <button type="button" class="btn btn-ai-success w-100" id="saveWorkflow">
+                            <i class="fas fa-save me-2"></i>Save Workflow
                         </button>
                         @if (isEdit)
                         {
-                            <button type="button" class="btn btn-danger w-100 mt-2" id="deleteWorkflow">
-                                <i class="fas fa-trash"></i> Delete Workflow
+                            <button type="button" class="btn btn-ai-secondary w-100 mt-2" id="deleteWorkflow">
+                                <i class="fas fa-trash me-2"></i>Delete Workflow
                             </button>
                         }
                     </div>
                 </form>
 
-                <hr>
+                <hr class="border-primary opacity-25">
 
-                <h5>Node Types</h5>
+                <h5><i class="fas fa-puzzle-piece me-2 text-primary"></i>Node Types</h5>
                 <div class="d-grid gap-2">
-                    <div class="card draggable-node" draggable="true" data-node-type="start">
-                        <div class="card-body p-2 text-center">
-                            <i class="fas fa-play text-success"></i>
-                            <small class="d-block">Start Node</small>
+                    <div class="ai-workflow-node start draggable-node" draggable="true" data-node-type="start">
+                        <div class="card-body p-3 text-center">
+                            <i class="fas fa-play fa-lg mb-2" style="color: var(--ai-success);"></i>
+                            <div class="fw-bold">Start Node</div>
+                            <small class="text-muted">Begin workflow</small>
                         </div>
                     </div>
-                    <div class="card draggable-node" draggable="true" data-node-type="action">
-                        <div class="card-body p-2 text-center">
-                            <i class="fas fa-cog text-primary"></i>
-                            <small class="d-block">Action Node</small>
+                    <div class="ai-workflow-node action draggable-node" draggable="true" data-node-type="action">
+                        <div class="card-body p-3 text-center">
+                            <i class="fas fa-cog fa-lg mb-2" style="color: var(--ai-primary);"></i>
+                            <div class="fw-bold">Action Node</div>
+                            <small class="text-muted">Execute task</small>
                         </div>
                     </div>
-                    <div class="card draggable-node" draggable="true" data-node-type="condition">
-                        <div class="card-body p-2 text-center">
-                            <i class="fas fa-question text-warning"></i>
-                            <small class="d-block">Condition Node</small>
+                    <div class="ai-workflow-node condition draggable-node" draggable="true" data-node-type="condition">
+                        <div class="card-body p-3 text-center">
+                            <i class="fas fa-question fa-lg mb-2" style="color: var(--ai-accent);"></i>
+                            <div class="fw-bold">Condition Node</div>
+                            <small class="text-muted">Branch logic</small>
                         </div>
                     </div>
-                    <div class="card draggable-node" draggable="true" data-node-type="end">
-                        <div class="card-body p-2 text-center">
-                            <i class="fas fa-stop text-danger"></i>
-                            <small class="d-block">End Node</small>
+                    <div class="ai-workflow-node end draggable-node" draggable="true" data-node-type="end">
+                        <div class="card-body p-3 text-center">
+                            <i class="fas fa-stop fa-lg mb-2" style="color: var(--ai-danger);"></i>
+                            <div class="fw-bold">End Node</div>
+                            <small class="text-muted">Complete workflow</small>
                         </div>
                     </div>
                 </div>
@@ -66,27 +70,38 @@
 
         <!-- Main Canvas Area -->
         <div class="col-md-9">
-            <div class="p-3">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4>@(isEdit ? "Edit Workflow" : "Create New Workflow")</h4>
+            <div class="p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-1">
+                            <i class="fas fa-project-diagram me-2 text-primary"></i>
+                            @(isEdit ? "Edit Workflow" : "Create New Workflow")
+                        </h4>
+                        <small class="text-muted">Design your AI workflow with drag-and-drop simplicity</small>
+                    </div>
                     <div class="btn-group">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" id="clearCanvas">
-                            <i class="fas fa-eraser"></i> Clear Canvas
+                        <button type="button" class="btn btn-ai-secondary btn-sm" id="clearCanvas">
+                            <i class="fas fa-eraser me-1"></i>Clear Canvas
                         </button>
-                        <a asp-controller="Workflows" asp-action="Index" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-arrow-left"></i> Back to Workflows
+                        <a asp-controller="Workflows" asp-action="Index" class="btn btn-ai-primary btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Workflows
                         </a>
                     </div>
                 </div>
 
                 <!-- Canvas -->
-                <div id="workflowCanvas" class="border rounded position-relative bg-white" 
+                <div id="workflowCanvas" class="ai-canvas position-relative" 
                      style="height: 70vh; overflow: auto;">
-                    <div class="text-center text-muted position-absolute w-100 h-100 d-flex align-items-center justify-content-center" 
-                         id="canvasPlaceholder">
-                        <div>
-                            <i class="fas fa-mouse-pointer fa-2x mb-2"></i>
-                            <p>Drag nodes from the sidebar to build your workflow</p>
+                    <div class="text-center position-absolute w-100 h-100 d-flex align-items-center justify-content-center" 
+                         id="canvasPlaceholder" style="z-index: 1;">
+                        <div class="ai-pulse">
+                            <i class="fas fa-mouse-pointer fa-3x mb-3 text-primary"></i>
+                            <h5 class="text-primary mb-2">Start Building Your Workflow</h5>
+                            <p class="text-muted">Drag nodes from the sidebar to create your intelligent workflow</p>
+                            <small class="text-muted">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Tip: Start with a Start Node and connect your logic flow
+                            </small>
                         </div>
                     </div>
                 </div>

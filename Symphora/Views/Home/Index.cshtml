@@ -1,8 +1,140 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "AI Workflow Orchestrator";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- AI Hero Section -->
+<div class="ai-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="ai-float">
+                    <i class="fas fa-robot me-3"></i>
+                    Welcome to Symphora
+                </h1>
+                <p class="lead mb-4">
+                    Design, orchestrate, and monitor intelligent multi-agent workflows with our powerful visual builder.
+                    Transform your AI automation dreams into reality.
+                </p>
+                @if (User.Identity!.IsAuthenticated)
+                {
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a asp-controller="Workflows" asp-action="Builder" class="btn btn-ai-secondary btn-lg me-md-2">
+                            <i class="fas fa-plus-circle me-2"></i>Create Workflow
+                        </a>
+                        <a asp-controller="Workflows" asp-action="Index" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-project-diagram me-2"></i>My Workflows
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-ai-secondary btn-lg me-md-2">
+                            <i class="fas fa-rocket me-2"></i>Get Started
+                        </a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </a>
+                    </div>
+                }
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="ai-pulse">
+                    <i class="fas fa-project-diagram" style="font-size: 12rem; opacity: 0.8;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container my-5">
+    <div class="row text-center mb-5">
+        <div class="col">
+            <h2 class="display-5 fw-bold text-primary">Powerful AI Workflow Features</h2>
+            <p class="lead text-muted">Everything you need to build and manage intelligent agent workflows</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="ai-card h-100 p-4 text-center">
+                <div class="ai-card-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 80px; height: 80px;">
+                    <i class="fas fa-drag-drop-alt fa-2x"></i>
+                </div>
+                <h4>Drag & Drop Builder</h4>
+                <p class="text-muted">
+                    Visually design complex workflows with our intuitive drag-and-drop interface. 
+                    No coding required.
+                </p>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="ai-card h-100 p-4 text-center">
+                <div class="ai-card-accent rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 80px; height: 80px;">
+                    <i class="fas fa-eye fa-2x"></i>
+                </div>
+                <h4>Real-time Monitoring</h4>
+                <p class="text-muted">
+                    Monitor your workflows in real-time with detailed execution logs and performance metrics.
+                </p>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="ai-card h-100 p-4 text-center">
+                <div class="ai-card-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 80px; height: 80px;">
+                    <i class="fas fa-users fa-2x"></i>
+                </div>
+                <h4>Team Collaboration</h4>
+                <p class="text-muted">
+                    Share workflows with your team and collaborate on building intelligent automation solutions.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    @if (User.Identity!.IsAuthenticated)
+    {
+        <div class="row mt-5 text-center">
+            <div class="col">
+                <h3 class="mb-4">Your AI Journey</h3>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="ai-card ai-card-gradient text-center p-4">
+                    <i class="fas fa-project-diagram fa-2x mb-2"></i>
+                    <h3>0</h3>
+                    <p class="mb-0">Active Workflows</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="ai-card ai-card-accent text-center p-4">
+                    <i class="fas fa-play fa-2x mb-2"></i>
+                    <h3>0</h3>
+                    <p class="mb-0">Executions Today</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="ai-card ai-card-gradient text-center p-4">
+                    <i class="fas fa-cogs fa-2x mb-2"></i>
+                    <h3>3</h3>
+                    <p class="mb-0">Available Agents</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="ai-card ai-card-accent text-center p-4">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h3>100%</h3>
+                    <p class="mb-0">Success Rate</p>
+                </div>
+            </div>
+        </div>
+    }
 </div>
