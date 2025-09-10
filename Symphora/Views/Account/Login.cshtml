@@ -1,0 +1,63 @@
+@model Symphora.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm rounded">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-4">Sign In</h2>
+                    
+                    <form asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post">
+                        <div asp-validation-summary="All" role="alert" id="validation-summary"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" placeholder="Enter your email address" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="RememberMe" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label"></label>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Sign In</button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="mb-0">
+                            Don't have an account? 
+                            <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]" class="text-primary">Create one</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Show validation summary if there are errors
+        document.addEventListener('DOMContentLoaded', function() {
+            const validationSummary = document.querySelector('[data-valmsg-summary="true"]');
+            const validationSummaryDiv = document.querySelector('#validation-summary');
+            
+            if (validationSummary && validationSummary.children.length > 0) {
+                validationSummaryDiv.classList.remove('d-none');
+            }
+        });
+    </script>
+}
