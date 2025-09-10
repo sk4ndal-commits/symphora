@@ -37,6 +37,10 @@
                     </div>
                     <div class="card-footer bg-transparent">
                         <div class="btn-group w-100" role="group">
+                            <a asp-controller="WorkflowExecution" asp-action="Dashboard" asp-route-workflowId="@workflow.Id" 
+                               class="btn btn-success btn-sm">
+                                <i class="fas fa-play"></i> Execute
+                            </a>
                             <a asp-controller="Workflows" asp-action="Builder" asp-route-id="@workflow.Id" 
                                class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-edit"></i> Edit

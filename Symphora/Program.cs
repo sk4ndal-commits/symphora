@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Symphora.Data;
+using Symphora.Hubs;
 using Symphora.Models;
+using Symphora.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +47,12 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 
+// Add SignalR
+builder.Services.AddSignalR();
+
+// Add WorkflowExecutor service
+builder.Services.AddScoped<IWorkflowExecutor, WorkflowExecutor>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -67,6 +75,9 @@ app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+// Map SignalR hub
+app.MapHub<WorkflowHub>("/workflowHub");
 
 // Seed demo agents
 using (var scope = app.Services.CreateScope())

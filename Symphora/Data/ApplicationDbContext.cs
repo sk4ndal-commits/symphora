@@ -13,6 +13,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     
     public DbSet<Workflow> Workflows { get; set; }
     public DbSet<Agent> Agents { get; set; }
+    public DbSet<ExecutionLog> ExecutionLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -82,6 +83,31 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("datetime('now')");
+        });
+        
+        // Configure ExecutionLog
+        modelBuilder.Entity<ExecutionLog>(entity =>
+        {
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .IsRequired();
+                
+            entity.Property(e => e.Timestamp)
+                .HasDefaultValueSql("datetime('now')");
+                
+            entity.Property(e => e.Output)
+                .IsRequired()
+                .HasDefaultValue(string.Empty);
+                
+            entity.HasOne(e => e.Workflow)
+                .WithMany()
+                .HasForeignKey(e => e.WorkflowId)
+                .OnDelete(DeleteBehavior.Cascade);
+                
+            entity.HasOne(e => e.Agent)
+                .WithMany()
+                .HasForeignKey(e => e.AgentId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }
