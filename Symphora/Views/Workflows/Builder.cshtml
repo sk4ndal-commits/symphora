@@ -1,0 +1,327 @@
+@{
+    ViewData["Title"] = "Workflow Builder";
+    var workflowId = ViewBag.WorkflowId as Guid?;
+    var isEdit = workflowId.HasValue;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar with Tools and Properties -->
+        <div class="col-md-3 border-end bg-light" style="min-height: 100vh;">
+            <div class="p-3">
+                <h5>Workflow Properties</h5>
+                <form id="workflowForm">
+                    <div class="mb-3">
+                        <label for="workflowName" class="form-label">Name *</label>
+                        <input type="text" class="form-control" id="workflowName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="workflowDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="workflowDescription" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-primary w-100" id="saveWorkflow">
+                            <i class="fas fa-save"></i> Save Workflow
+                        </button>
+                        @if (isEdit)
+                        {
+                            <button type="button" class="btn btn-danger w-100 mt-2" id="deleteWorkflow">
+                                <i class="fas fa-trash"></i> Delete Workflow
+                            </button>
+                        }
+                    </div>
+                </form>
+
+                <hr>
+
+                <h5>Node Types</h5>
+                <div class="d-grid gap-2">
+                    <div class="card draggable-node" draggable="true" data-node-type="start">
+                        <div class="card-body p-2 text-center">
+                            <i class="fas fa-play text-success"></i>
+                            <small class="d-block">Start Node</small>
+                        </div>
+                    </div>
+                    <div class="card draggable-node" draggable="true" data-node-type="action">
+                        <div class="card-body p-2 text-center">
+                            <i class="fas fa-cog text-primary"></i>
+                            <small class="d-block">Action Node</small>
+                        </div>
+                    </div>
+                    <div class="card draggable-node" draggable="true" data-node-type="condition">
+                        <div class="card-body p-2 text-center">
+                            <i class="fas fa-question text-warning"></i>
+                            <small class="d-block">Condition Node</small>
+                        </div>
+                    </div>
+                    <div class="card draggable-node" draggable="true" data-node-type="end">
+                        <div class="card-body p-2 text-center">
+                            <i class="fas fa-stop text-danger"></i>
+                            <small class="d-block">End Node</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Canvas Area -->
+        <div class="col-md-9">
+            <div class="p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>@(isEdit ? "Edit Workflow" : "Create New Workflow")</h4>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="clearCanvas">
+                            <i class="fas fa-eraser"></i> Clear Canvas
+                        </button>
+                        <a asp-controller="Workflows" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Workflows
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Canvas -->
+                <div id="workflowCanvas" class="border rounded position-relative bg-white" 
+                     style="height: 70vh; overflow: auto;">
+                    <div class="text-center text-muted position-absolute w-100 h-100 d-flex align-items-center justify-content-center" 
+                         id="canvasPlaceholder">
+                        <div>
+                            <i class="fas fa-mouse-pointer fa-2x mb-2"></i>
+                            <p>Drag nodes from the sidebar to build your workflow</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success/Error Messages -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+    <div id="alertContainer"></div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentWorkflow = {
+            id: @(isEdit ? $"'{workflowId}'" : "null"),
+            nodes: [],
+            edges: [],
+            nodeCounter: 0
+        };
+
+        // Load existing workflow if editing
+        if (currentWorkflow.id) {
+            loadWorkflow(currentWorkflow.id);
+        }
+
+        // Drag and Drop functionality
+        document.querySelectorAll('.draggable-node').forEach(node => {
+            node.addEventListener('dragstart', function(e) {
+                e.dataTransfer.setData('text/plain', this.dataset.nodeType);
+            });
+        });
+
+        const canvas = document.getElementById('workflowCanvas');
+        canvas.addEventListener('dragover', function(e) {
+            e.preventDefault();
+        });
+
+        canvas.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const nodeType = e.dataTransfer.getData('text/plain');
+            
+            // Hide placeholder
+            document.getElementById('canvasPlaceholder').style.display = 'none';
+            
+            // Create node element
+            createNode(nodeType, e.offsetX, e.offsetY);
+        });
+
+        function createNode(type, x, y) {
+            const nodeId = `node_${++currentWorkflow.nodeCounter}`;
+            const nodeData = {
+                id: nodeId,
+                type: type,
+                x: x,
+                y: y,
+                label: `${type.charAt(0).toUpperCase() + type.slice(1)} Node`
+            };
+            
+            currentWorkflow.nodes.push(nodeData);
+            
+            const nodeElement = document.createElement('div');
+            nodeElement.className = 'workflow-node position-absolute bg-white border rounded shadow-sm p-2';
+            nodeElement.style.left = x + 'px';
+            nodeElement.style.top = y + 'px';
+            nodeElement.style.cursor = 'move';
+            nodeElement.innerHTML = `
+                <div class="text-center">
+                    <i class="fas ${getNodeIcon(type)} ${getNodeColor(type)}"></i>
+                    <div class="small">${nodeData.label}</div>
+                    <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="deleteNode('${nodeId}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            canvas.appendChild(nodeElement);
+        }
+
+        function getNodeIcon(type) {
+            const icons = {
+                'start': 'fa-play',
+                'action': 'fa-cog', 
+                'condition': 'fa-question',
+                'end': 'fa-stop'
+            };
+            return icons[type] || 'fa-circle';
+        }
+
+        function getNodeColor(type) {
+            const colors = {
+                'start': 'text-success',
+                'action': 'text-primary',
+                'condition': 'text-warning', 
+                'end': 'text-danger'
+            };
+            return colors[type] || 'text-secondary';
+        }
+
+        function deleteNode(nodeId) {
+            currentWorkflow.nodes = currentWorkflow.nodes.filter(n => n.id !== nodeId);
+            // Remove visual element
+            event.target.closest('.workflow-node').remove();
+            
+            // Show placeholder if no nodes left
+            if (currentWorkflow.nodes.length === 0) {
+                document.getElementById('canvasPlaceholder').style.display = 'flex';
+            }
+        }
+
+        // Clear canvas
+        document.getElementById('clearCanvas').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear the canvas? This will remove all nodes.')) {
+                currentWorkflow.nodes = [];
+                currentWorkflow.edges = [];
+                canvas.querySelectorAll('.workflow-node').forEach(node => node.remove());
+                document.getElementById('canvasPlaceholder').style.display = 'flex';
+            }
+        });
+
+        // Save workflow
+        document.getElementById('saveWorkflow').addEventListener('click', async function() {
+            const name = document.getElementById('workflowName').value.trim();
+            if (!name) {
+                showAlert('Please enter a workflow name.', 'danger');
+                return;
+            }
+
+            const workflowData = {
+                name: name,
+                description: document.getElementById('workflowDescription').value || null,
+                nodesJson: JSON.stringify(currentWorkflow.nodes),
+                edgesJson: JSON.stringify(currentWorkflow.edges)
+            };
+
+            try {
+                let response;
+                if (currentWorkflow.id) {
+                    // Update existing workflow
+                    response = await fetch(`/api/workflow/${currentWorkflow.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(workflowData)
+                    });
+                } else {
+                    // Create new workflow
+                    response = await fetch('/api/workflow', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(workflowData)
+                    });
+                }
+
+                if (response.ok) {
+                    const savedWorkflow = await response.json();
+                    currentWorkflow.id = savedWorkflow.id;
+                    showAlert('Workflow saved successfully!', 'success');
+                } else {
+                    const error = await response.text();
+                    showAlert(`Failed to save workflow: ${error}`, 'danger');
+                }
+            } catch (error) {
+                console.error('Error saving workflow:', error);
+                showAlert('Failed to save workflow. Please try again.', 'danger');
+            }
+        });
+
+        async function loadWorkflow(id) {
+            try {
+                const response = await fetch(`/api/workflow/${id}`);
+                if (response.ok) {
+                    const workflow = await response.json();
+                    
+                    // Populate form
+                    document.getElementById('workflowName').value = workflow.name;
+                    document.getElementById('workflowDescription').value = workflow.description || '';
+                    
+                    // Load nodes
+                    const nodes = JSON.parse(workflow.nodesJson || '[]');
+                    const edges = JSON.parse(workflow.edgesJson || '[]');
+                    
+                    currentWorkflow.nodes = nodes;
+                    currentWorkflow.edges = edges;
+                    
+                    // Render nodes on canvas
+                    if (nodes.length > 0) {
+                        document.getElementById('canvasPlaceholder').style.display = 'none';
+                        nodes.forEach(node => {
+                            createNodeFromData(node);
+                        });
+                    }
+                } else {
+                    showAlert('Failed to load workflow.', 'danger');
+                }
+            } catch (error) {
+                console.error('Error loading workflow:', error);
+                showAlert('Failed to load workflow.', 'danger');
+            }
+        }
+
+        function createNodeFromData(nodeData) {
+            const nodeElement = document.createElement('div');
+            nodeElement.className = 'workflow-node position-absolute bg-white border rounded shadow-sm p-2';
+            nodeElement.style.left = nodeData.x + 'px';
+            nodeElement.style.top = nodeData.y + 'px';
+            nodeElement.style.cursor = 'move';
+            nodeElement.innerHTML = `
+                <div class="text-center">
+                    <i class="fas ${getNodeIcon(nodeData.type)} ${getNodeColor(nodeData.type)}"></i>
+                    <div class="small">${nodeData.label}</div>
+                    <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="deleteNode('${nodeData.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            canvas.appendChild(nodeElement);
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertElement = document.createElement('div');
+            alertElement.className = `alert alert-${type} alert-dismissible fade show`;
+            alertElement.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            alertContainer.appendChild(alertElement);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                alertElement.remove();
+            }, 5000);
+        }
+    </script>
+}

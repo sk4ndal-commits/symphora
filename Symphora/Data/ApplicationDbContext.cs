@@ -10,6 +10,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         : base(options)
     {
     }
+    
+    public DbSet<Workflow> Workflows { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,6 +29,36 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("datetime('now')");
+        });
+        
+        // Configure Workflow
+        modelBuilder.Entity<Workflow>(entity =>
+        {
+            entity.Property(e => e.Name)
+                .HasMaxLength(200)
+                .IsRequired();
+                
+            entity.Property(e => e.Description)
+                .HasMaxLength(1000);
+                
+            entity.Property(e => e.NodesJson)
+                .IsRequired()
+                .HasDefaultValue("[]");
+                
+            entity.Property(e => e.EdgesJson)
+                .IsRequired()
+                .HasDefaultValue("[]");
+                
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("datetime('now')");
+                
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("datetime('now')");
+                
+            entity.HasOne(e => e.Owner)
+                .WithMany()
+                .HasForeignKey(e => e.OwnerId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
