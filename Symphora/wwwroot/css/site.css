@@ -235,8 +235,12 @@ body {
 /* AI Footer */
 .ai-footer {
   background: var(--ai-dark);
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--ai-accent);
   border-top: none;
+}
+
+.ai-footer p, .ai-footer small {
+  color: var(--ai-accent);
 }
 
 .ai-footer a {
@@ -250,7 +254,7 @@ body {
 
 /* AI Hero Section */
 .ai-hero {
-  background: var(--ai-gradient-primary);
+  background: var(--ai-primary);
   color: white;
   padding: 80px 0;
   margin: -24px -15px 40px -15px;

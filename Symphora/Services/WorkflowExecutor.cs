@@ -16,17 +16,17 @@ public interface IWorkflowExecutor
 
 public class WorkflowExecutor : IWorkflowExecutor
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly IHubContext<WorkflowHub> _hubContext;
     private readonly ILogger<WorkflowExecutor> _logger;
     private readonly Dictionary<Guid, CancellationTokenSource> _runningWorkflows;
 
     public WorkflowExecutor(
-        ApplicationDbContext context, 
+        IServiceScopeFactory serviceScopeFactory, 
         IHubContext<WorkflowHub> hubContext,
         ILogger<WorkflowExecutor> logger)
     {
-        _context = context;
+        _serviceScopeFactory = serviceScopeFactory;
         _hubContext = hubContext;
         _logger = logger;
         _runningWorkflows = new Dictionary<Guid, CancellationTokenSource>();
@@ -36,7 +36,10 @@ public class WorkflowExecutor : IWorkflowExecutor
     {
         try
         {
-            var workflow = await _context.Workflows
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            
+            var workflow = await context.Workflows
                 .Include(w => w.Owner)
                 .FirstOrDefaultAsync(w => w.Id == workflowId);
 
@@ -87,7 +90,10 @@ public class WorkflowExecutor : IWorkflowExecutor
 
     public async Task<List<ExecutionLog>> GetWorkflowExecutionLogsAsync(Guid workflowId)
     {
-        return await _context.ExecutionLogs
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        
+        return await context.ExecutionLogs
             .Where(log => log.WorkflowId == workflowId)
             .Include(log => log.Agent)
             .OrderBy(log => log.Timestamp)
@@ -144,8 +150,18 @@ public class WorkflowExecutor : IWorkflowExecutor
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Get agent for this node
-            var agent = await _context.Agents.FindAsync(Guid.Parse(node.Data.AgentId));
+            // Validate and parse AgentId
+            if (string.IsNullOrWhiteSpace(node.Data.AgentId) || !Guid.TryParse(node.Data.AgentId, out var agentId))
+            {
+                await LogExecutionStepAsync(workflowId, Guid.Empty, "Failed", $"Invalid or missing agent ID for node {node.Id}", null);
+                return;
+            }
+
+            // Get agent for this node using a scoped context
+            using var scope = _serviceScopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            
+            var agent = await context.Agents.FindAsync(agentId);
             if (agent == null)
             {
                 await LogExecutionStepAsync(workflowId, Guid.Empty, "Failed", $"Agent not found for node {node.Id}", null);
@@ -218,8 +234,11 @@ public class WorkflowExecutor : IWorkflowExecutor
             Timestamp = DateTime.UtcNow
         };
 
-        _context.ExecutionLogs.Add(log);
-        await _context.SaveChangesAsync();
+        using var scope = _serviceScopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        
+        context.ExecutionLogs.Add(log);
+        await context.SaveChangesAsync();
 
         // Notify clients about the new log
         await _hubContext.Clients.Group($"workflow-{workflowId}").SendAsync("LogUpdate", log);

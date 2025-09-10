@@ -4,82 +4,106 @@
     var workflowId = ViewData["WorkflowId"]?.ToString() ?? "";
 }
 
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="display-6">Workflow Execution Dashboard</h1>
-                <div>
-                    <button id="executeBtn" class="btn btn-success me-2" onclick="executeWorkflow()">
-                        <i class="fas fa-play"></i> Run Workflow
-                    </button>
-                    <button id="cancelBtn" class="btn btn-danger me-2" onclick="cancelWorkflow()" disabled>
-                        <i class="fas fa-stop"></i> Cancel
-                    </button>
-                    <a asp-controller="Workflows" asp-action="Index" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Workflows
-                    </a>
-                </div>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-4 mb-1">
+                <i class="fas fa-tachometer-alt me-3 text-primary"></i>Workflow Execution Dashboard
+            </h1>
+            <p class="text-muted">Monitor and control your intelligent workflow execution in real-time</p>
+        </div>
+        <div>
+            <div class="btn-group" role="group">
+                <button id="executeBtn" class="btn btn-ai-success me-2" onclick="executeWorkflow()">
+                    <i class="fas fa-play me-1"></i> Run Workflow
+                </button>
+                <button id="cancelBtn" class="btn btn-danger me-2" onclick="cancelWorkflow()" disabled>
+                    <i class="fas fa-stop me-1"></i> Cancel
+                </button>
+                <a asp-controller="Workflows" asp-action="Index" class="btn btn-ai-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Workflows
+                </a>
             </div>
         </div>
     </div>
+</div>
+
+<div class="container-fluid px-4">
 
     <!-- Status and Progress Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+            <div class="ai-card">
+                <div class="ai-card-gradient text-white p-4">
                     <h5 class="mb-0">
-                        <i class="fas fa-info-circle"></i> Execution Status
+                        <i class="fas fa-info-circle me-2"></i>Execution Status
                     </h5>
                 </div>
-                <div class="card-body">
-                    <div id="statusMessage" class="alert alert-info mb-3">
-                        <i class="fas fa-clock"></i> Ready to execute workflow
+                <div class="card-body p-4">
+                    <div id="statusMessage" class="alert alert-info d-flex align-items-center mb-4">
+                        <i class="fas fa-clock me-2"></i>
+                        <span>Ready to execute workflow</span>
                     </div>
                     
-                    <div class="progress mb-3" style="height: 25px;">
-                        <div id="progressBar" 
-                             class="progress-bar progress-bar-striped" 
-                             role="progressbar" 
-                             style="width: 0%"
-                             aria-valuenow="0" 
-                             aria-valuemin="0" 
-                             aria-valuemax="100">
-                            0%
+                    <div class="mb-4">
+                        <label class="form-label fw-bold mb-2">
+                            <i class="fas fa-chart-line me-1 text-primary"></i>Execution Progress
+                        </label>
+                        <div class="progress" style="height: 30px; border-radius: 15px; overflow: hidden;">
+                            <div id="progressBar" 
+                                 class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 style="width: 0%; background: var(--ai-gradient-success);"
+                                 aria-valuenow="0" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                <span class="fw-bold">0%</span>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="row text-center">
+                    <div class="row g-4 text-center">
                         <div class="col-md-3">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h6 class="card-title text-muted">Total Steps</h6>
-                                    <h4 id="totalSteps" class="text-primary">0</h4>
+                            <div class="ai-card ai-card-gradient text-white h-100">
+                                <div class="card-body p-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-list-ol fa-2x"></i>
+                                    </div>
+                                    <h6 class="card-title opacity-90 mb-2">Total Steps</h6>
+                                    <h3 id="totalSteps" class="mb-0">0</h3>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h6 class="card-title text-muted">Completed</h6>
-                                    <h4 id="completedSteps" class="text-success">0</h4>
+                            <div class="ai-card ai-card-accent text-white h-100">
+                                <div class="card-body p-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-check-circle fa-2x"></i>
+                                    </div>
+                                    <h6 class="card-title opacity-90 mb-2">Completed</h6>
+                                    <h3 id="completedSteps" class="mb-0">0</h3>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h6 class="card-title text-muted">Failed</h6>
-                                    <h4 id="failedSteps" class="text-danger">0</h4>
+                            <div class="ai-card text-white h-100" style="background: var(--ai-gradient-secondary);">
+                                <div class="card-body p-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-times-circle fa-2x"></i>
+                                    </div>
+                                    <h6 class="card-title opacity-90 mb-2">Failed</h6>
+                                    <h3 id="failedSteps" class="mb-0">0</h3>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h6 class="card-title text-muted">Running</h6>
-                                    <h4 id="runningSteps" class="text-warning">0</h4>
+                            <div class="ai-card text-white h-100" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333 !important;">
+                                <div class="card-body p-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                                    </div>
+                                    <h6 class="card-title mb-2" style="opacity: 0.8;">Running</h6>
+                                    <h3 id="runningSteps" class="mb-0">0</h3>
                                 </div>
                             </div>
                         </div>
@@ -92,13 +116,13 @@
     <!-- Execution Logs Section -->
     <div class="row">
         <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <div class="ai-card">
+                <div class="ai-card-gradient text-white p-4 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                        <i class="fas fa-list-alt"></i> Execution Logs
+                        <i class="fas fa-list-alt me-2"></i>Execution Logs
                     </h5>
-                    <button id="clearLogsBtn" class="btn btn-sm btn-outline-light" onclick="clearLogs()">
-                        <i class="fas fa-trash"></i> Clear Logs
+                    <button id="clearLogsBtn" class="btn btn-outline-light btn-sm" onclick="clearLogs()">
+                        <i class="fas fa-trash me-1"></i> Clear Logs
                     </button>
                 </div>
                 <div class="card-body p-0">
@@ -146,10 +170,22 @@
                             }
                             else
                             {
-                                <div class="text-center text-muted p-4">
-                                    <i class="fas fa-clipboard-list fa-3x mb-3"></i>
-                                    <h5>No execution logs yet</h5>
-                                    <p>Logs will appear here when you run the workflow</p>
+                                <div class="text-center py-5">
+                                    <div class="ai-pulse">
+                                        <div class="ai-card-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                                             style="width: 100px; height: 100px;">
+                                            <i class="fas fa-clipboard-list fa-3x text-white"></i>
+                                        </div>
+                                    </div>
+                                    <h5 class="mb-3">No execution logs yet</h5>
+                                    <p class="text-muted mb-4">
+                                        Logs will appear here when you run the workflow. 
+                                        Monitor real-time execution progress and detailed step information.
+                                    </p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-lightbulb me-1"></i>
+                                        Tip: Click "Run Workflow" to start execution and see live updates
+                                    </small>
                                 </div>
                             }
                         </div>
