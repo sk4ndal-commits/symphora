@@ -12,6 +12,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
     
     public DbSet<Workflow> Workflows { get; set; }
+    public DbSet<Agent> Agents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,6 +60,28 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .WithMany()
                 .HasForeignKey(e => e.OwnerId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // Configure Agent
+        modelBuilder.Entity<Agent>(entity =>
+        {
+            entity.Property(e => e.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+                
+            entity.Property(e => e.Type)
+                .HasMaxLength(50)
+                .IsRequired();
+                
+            entity.Property(e => e.ParametersJson)
+                .IsRequired()
+                .HasDefaultValue("{}");
+                
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("datetime('now')");
+                
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("datetime('now')");
         });
     }
 }

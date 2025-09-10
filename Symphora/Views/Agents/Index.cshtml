@@ -1,0 +1,164 @@
+@model IEnumerable<Symphora.Models.Agent>
+@{
+    ViewData["Title"] = "Agent Library";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-4">Agent Library</h1>
+</div>
+
+@if (Model.Any())
+{
+    <div class="row">
+        @foreach (var agent in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm rounded">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">@agent.Name</h5>
+                        <small class="text-muted">Type: @agent.Type</small>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text text-muted">
+                            @switch (agent.Type)
+                            {
+                                case "DataFetcher":
+                                    <span>Fetches data from external sources via HTTP requests.</span>
+                                    break;
+                                case "TextProcessor":
+                                    <span>Processes and transforms text content.</span>
+                                    break;
+                                case "EmailSender":
+                                    <span>Sends email notifications via SMTP.</span>
+                                    break;
+                                default:
+                                    <span>Custom agent for workflow automation.</span>
+                                    break;
+                            }
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <small class="text-muted">
+                                Updated: @agent.UpdatedAt.ToString("MMM dd, yyyy")
+                            </small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <button type="button" class="btn btn-primary w-100" 
+                                onclick="configureAgent('@agent.Id', '@agent.Name', '@Html.Raw(agent.ParametersJson)')">
+                            <i class="fas fa-cog"></i> Configure
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <i class="fas fa-robot fa-3x text-muted mb-3"></i>
+        <h3 class="text-muted">No agents available</h3>
+        <p class="text-muted">Agents will appear here once they are added to the system.</p>
+    </div>
+}
+
+<!-- Configuration Modal -->
+<div class="modal fade" id="configureModal" tabindex="-1" aria-labelledby="configureModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="configureModalLabel">Configure Agent: <span id="agentName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="configureForm">
+                    <div class="mb-3">
+                        <label for="parametersJson" class="form-label">Configuration Parameters (JSON)</label>
+                        <textarea class="form-control" id="parametersJson" rows="8" placeholder="Enter JSON configuration..."></textarea>
+                        <div class="form-text">Enter valid JSON parameters for the agent configuration.</div>
+                        <div id="validationError" class="invalid-feedback" style="display: none;"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveConfiguration">Save Configuration</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentAgentId = null;
+        
+        function configureAgent(id, name, parametersJson) {
+            currentAgentId = id;
+            document.getElementById('agentName').textContent = name;
+            document.getElementById('parametersJson').value = JSON.stringify(JSON.parse(parametersJson), null, 2);
+            
+            // Reset validation state
+            const textarea = document.getElementById('parametersJson');
+            const errorDiv = document.getElementById('validationError');
+            textarea.classList.remove('is-invalid');
+            errorDiv.style.display = 'none';
+            
+            new bootstrap.Modal(document.getElementById('configureModal')).show();
+        }
+        
+        document.getElementById('saveConfiguration').addEventListener('click', async function() {
+            if (!currentAgentId) return;
+            
+            const textarea = document.getElementById('parametersJson');
+            const errorDiv = document.getElementById('validationError');
+            const parametersText = textarea.value.trim();
+            
+            // Reset validation state
+            textarea.classList.remove('is-invalid');
+            errorDiv.style.display = 'none';
+            
+            if (!parametersText) {
+                showValidationError('Parameters cannot be empty.');
+                return;
+            }
+            
+            // Validate JSON
+            try {
+                const parsedJson = JSON.parse(parametersText);
+            } catch (e) {
+                showValidationError('Invalid JSON format: ' + e.message);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/Agents/${currentAgentId}/Configure`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: parametersText
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('configureModal')).hide();
+                    location.reload();
+                } else {
+                    showValidationError(result.message || 'Failed to save configuration. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error saving configuration:', error);
+                showValidationError('Failed to save configuration. Please try again.');
+            }
+        });
+        
+        function showValidationError(message) {
+            const textarea = document.getElementById('parametersJson');
+            const errorDiv = document.getElementById('validationError');
+            textarea.classList.add('is-invalid');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+    </script>
+}

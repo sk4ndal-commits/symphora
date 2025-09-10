@@ -68,5 +68,39 @@ app.MapControllerRoute(
         pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// Seed demo agents
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    
+    // Check if agents already exist
+    if (!context.Agents.Any())
+    {
+        var agents = new[]
+        {
+            new Agent
+            {
+                Name = "DataFetcher",
+                Type = "DataFetcher",
+                ParametersJson = "{\"url\":\"\",\"method\":\"GET\",\"headers\":{}}",
+            },
+            new Agent
+            {
+                Name = "TextProcessor",
+                Type = "TextProcessor",
+                ParametersJson = "{\"operation\":\"uppercase\",\"removeSpaces\":false}",
+            },
+            new Agent
+            {
+                Name = "EmailSender",
+                Type = "EmailSender",
+                ParametersJson = "{\"smtpServer\":\"\",\"port\":587,\"username\":\"\",\"password\":\"\"}",
+            }
+        };
+        
+        context.Agents.AddRange(agents);
+        context.SaveChanges();
+    }
+}
 
 app.Run();
