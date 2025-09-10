@@ -1,0 +1,157 @@
+@model Symphora.Models.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm rounded">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-4">My Profile</h2>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Message))
+                    {
+                        <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
+                            @Model.Message
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    
+                    <form asp-action="Index" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="All" role="alert" style="display:none;" id="validation-summary"></div>
+                        
+                        <!-- Current Avatar Display -->
+                        @if (!string.IsNullOrEmpty(Model.CurrentAvatarUrl))
+                        {
+                            <div class="mb-3 text-center">
+                                <label class="form-label">Current Avatar</label>
+                                <div>
+                                    <img src="@Model.CurrentAvatarUrl" alt="Current Avatar" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;" id="current-avatar">
+                                </div>
+                            </div>
+                        }
+                        
+                        <!-- Avatar Upload -->
+                        <div class="mb-3">
+                            <label asp-for="AvatarFile" class="form-label"></label>
+                            <input asp-for="AvatarFile" class="form-control" type="file" accept="image/*" id="avatar-upload">
+                            <span asp-validation-for="AvatarFile" class="text-danger"></span>
+                            <div class="form-text">
+                                Supported formats: JPEG, PNG, GIF. Maximum size: 5MB.
+                            </div>
+                            <!-- Avatar Preview -->
+                            <div class="mt-2 text-center" id="avatar-preview-container" style="display: none;">
+                                <label class="form-label">Preview</label>
+                                <div>
+                                    <img id="avatar-preview" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;" alt="Avatar Preview">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Name Field -->
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" placeholder="Enter your full name" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <!-- Timezone Dropdown -->
+                        <div class="mb-4">
+                            <label asp-for="Timezone" class="form-label"></label>
+                            <select asp-for="Timezone" class="form-select">
+                                <option value="UTC">UTC (Coordinated Universal Time)</option>
+                                <option value="America/New_York">Eastern Time (America/New_York)</option>
+                                <option value="America/Chicago">Central Time (America/Chicago)</option>
+                                <option value="America/Denver">Mountain Time (America/Denver)</option>
+                                <option value="America/Los_Angeles">Pacific Time (America/Los_Angeles)</option>
+                                <option value="Europe/London">London (Europe/London)</option>
+                                <option value="Europe/Paris">Paris (Europe/Paris)</option>
+                                <option value="Europe/Berlin">Berlin (Europe/Berlin)</option>
+                                <option value="Europe/Rome">Rome (Europe/Rome)</option>
+                                <option value="Europe/Madrid">Madrid (Europe/Madrid)</option>
+                                <option value="Asia/Tokyo">Tokyo (Asia/Tokyo)</option>
+                                <option value="Asia/Shanghai">Shanghai (Asia/Shanghai)</option>
+                                <option value="Asia/Kolkata">Mumbai (Asia/Kolkata)</option>
+                                <option value="Asia/Dubai">Dubai (Asia/Dubai)</option>
+                                <option value="Australia/Sydney">Sydney (Australia/Sydney)</option>
+                                <option value="Pacific/Auckland">Auckland (Pacific/Auckland)</option>
+                                <option value="America/Sao_Paulo">São Paulo (America/Sao_Paulo)</option>
+                                <option value="America/Mexico_City">Mexico City (America/Mexico_City)</option>
+                            </select>
+                            <span asp-validation-for="Timezone" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Avatar preview functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatarUpload = document.getElementById('avatar-upload');
+            const avatarPreview = document.getElementById('avatar-preview');
+            const avatarPreviewContainer = document.getElementById('avatar-preview-container');
+            const validationSummary = document.querySelector('[data-valmsg-summary="true"]');
+            const validationSummaryDiv = document.querySelector('#validation-summary');
+
+            // Show validation summary if there are errors
+            if (validationSummary && validationSummary.children.length > 0) {
+                validationSummaryDiv.style.display = 'block';
+            }
+
+            // Avatar preview on file selection
+            avatarUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                
+                if (file) {
+                    // Validate file type
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!allowedTypes.includes(file.type.toLowerCase())) {
+                        alert('Please select a valid image file (JPEG, PNG, GIF).');
+                        avatarUpload.value = '';
+                        avatarPreviewContainer.style.display = 'none';
+                        return;
+                    }
+
+                    // Validate file size (5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size must be less than 5MB.');
+                        avatarUpload.value = '';
+                        avatarPreviewContainer.style.display = 'none';
+                        return;
+                    }
+
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        avatarPreview.src = e.target.result;
+                        avatarPreviewContainer.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    avatarPreviewContainer.style.display = 'none';
+                }
+            });
+
+            // Auto-dismiss alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                if (!alert.classList.contains('alert-danger')) {
+                    setTimeout(function() {
+                        const bootstrapAlert = new bootstrap.Alert(alert);
+                        bootstrapAlert.close();
+                    }, 5000);
+                }
+            });
+        });
+    </script>
+}
