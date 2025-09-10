@@ -3,86 +3,147 @@
     ViewData["Title"] = "Agent Library";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="display-4">Agent Library</h1>
-</div>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-4 mb-1">
+                <i class="fas fa-cogs me-3 text-primary"></i>Agent Library
+            </h1>
+            <p class="text-muted">Discover and configure intelligent agents for your workflows</p>
+        </div>
+        <div>
+            <button class="btn btn-ai-primary">
+                <i class="fas fa-plus me-2"></i>Add Agent
+            </button>
+        </div>
+    </div></div>
 
-@if (Model.Any())
-{
-    <div class="row">
-        @foreach (var agent in Model)
-        {
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card shadow-sm rounded">
-                    <div class="card-header bg-light">
-                        <h5 class="card-title mb-0">@agent.Name</h5>
-                        <small class="text-muted">Type: @agent.Type</small>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text text-muted">
-                            @switch (agent.Type)
-                            {
-                                case "DataFetcher":
-                                    <span>Fetches data from external sources via HTTP requests.</span>
-                                    break;
-                                case "TextProcessor":
-                                    <span>Processes and transforms text content.</span>
-                                    break;
-                                case "EmailSender":
-                                    <span>Sends email notifications via SMTP.</span>
-                                    break;
-                                default:
-                                    <span>Custom agent for workflow automation.</span>
-                                    break;
-                            }
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <small class="text-muted">
-                                Updated: @agent.UpdatedAt.ToString("MMM dd, yyyy")
-                            </small>
+    @if (Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var agent in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="ai-card h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="ai-card-gradient rounded-circle d-inline-flex align-items-center justify-content-center me-3" 
+                                     style="width: 50px; height: 50px;">
+                                    @switch (agent.Type)
+                                    {
+                                        case "DataFetcher":
+                                            <i class="fas fa-download text-white"></i>
+                                            break;
+                                        case "TextProcessor":
+                                            <i class="fas fa-file-alt text-white"></i>
+                                            break;
+                                        case "EmailSender":
+                                            <i class="fas fa-envelope text-white"></i>
+                                            break;
+                                        default:
+                                            <i class="fas fa-robot text-white"></i>
+                                            break;
+                                    }
+                                </div>
+                                <div>
+                                    <h5 class="card-title mb-1">@agent.Name</h5>
+                                    <small class="text-muted">@agent.Type</small>
+                                </div>
+                            </div>
+                            
+                            <p class="card-text text-muted mb-3">
+                                @switch (agent.Type)
+                                {
+                                    case "DataFetcher":
+                                        <span>Fetches data from external sources via HTTP requests with intelligent parsing.</span>
+                                        break;
+                                    case "TextProcessor":
+                                        <span>Processes and transforms text content using advanced NLP techniques.</span>
+                                        break;
+                                    case "EmailSender":
+                                        <span>Sends intelligent email notifications with templating and automation.</span>
+                                        break;
+                                    default:
+                                        <span>Custom AI agent designed for workflow automation and intelligence.</span>
+                                        break;
+                                }
+                            </p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Updated: @agent.UpdatedAt.ToString("MMM dd, yyyy")
+                                </small>
+                                <span class="badge bg-success">Ready</span>
+                            </div>
+                            
+                            <button type="button" class="btn btn-ai-primary w-100" 
+                                    onclick="configureAgent('@agent.Id', '@agent.Name', '@Html.Raw(agent.ParametersJson)')">
+                                <i class="fas fa-cog me-2"></i>Configure Agent
+                            </button>
                         </div>
                     </div>
-                    <div class="card-footer bg-transparent">
-                        <button type="button" class="btn btn-primary w-100" 
-                                onclick="configureAgent('@agent.Id', '@agent.Name', '@Html.Raw(agent.ParametersJson)')">
-                            <i class="fas fa-cog"></i> Configure
-                        </button>
-                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="ai-pulse">
+                <div class="ai-card-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                     style="width: 120px; height: 120px;">
+                    <i class="fas fa-robot fa-4x text-white"></i>
                 </div>
             </div>
-        }
-    </div>
-}
-else
-{
-    <div class="text-center py-5">
-        <i class="fas fa-robot fa-3x text-muted mb-3"></i>
-        <h3 class="text-muted">No agents available</h3>
-        <p class="text-muted">Agents will appear here once they are added to the system.</p>
-    </div>
-}
+            <h3 class="mb-3">No Agents Available Yet</h3>
+            <p class="text-muted mb-4">
+                Your AI agent library is waiting to be populated. Agents will appear here once they are added to the system.
+            </p>
+            <button class="btn btn-ai-primary">
+                <i class="fas fa-plus me-2"></i>Add Your First Agent
+            </button>
+        </div>
+    }
 
 <!-- Configuration Modal -->
 <div class="modal fade" id="configureModal" tabindex="-1" aria-labelledby="configureModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="configureModalLabel">Configure Agent: <span id="agentName"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content ai-card">
+            <div class="modal-header ai-card-gradient text-white">
+                <h5 class="modal-title" id="configureModalLabel">
+                    <i class="fas fa-cog me-2"></i>Configure Agent: <span id="agentName"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
+                <div class="alert alert-info d-flex align-items-center mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <small>Configure your agent's parameters using valid JSON format. These settings will control the agent's behavior in your workflows.</small>
+                </div>
                 <form id="configureForm">
                     <div class="mb-3">
-                        <label for="parametersJson" class="form-label">Configuration Parameters (JSON)</label>
-                        <textarea class="form-control" id="parametersJson" rows="8" placeholder="Enter JSON configuration..."></textarea>
-                        <div class="form-text">Enter valid JSON parameters for the agent configuration.</div>
+                        <label for="parametersJson" class="form-label fw-bold">
+                            <i class="fas fa-code me-1"></i>Configuration Parameters (JSON)
+                        </label>
+                        <textarea class="form-control" id="parametersJson" rows="10" 
+                                  placeholder='{\n  "key": "value",\n  "setting": "configuration"\n}'
+                                  style="font-family: 'Courier New', monospace;"></textarea>
+                        <div class="form-text">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            Enter valid JSON parameters for the agent configuration.
+                        </div>
                         <div id="validationError" class="invalid-feedback" style="display: none;"></div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveConfiguration">Save Configuration</button>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-ai-success" id="saveConfiguration">
+                    <i class="fas fa-save me-1"></i>Save Configuration
+                </button>
             </div>
         </div>
     </div>
